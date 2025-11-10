@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+# Désactiver les shapes de Ruby pour éviter le segfault sur Koyeb
+export RUBYOPT="${RUBYOPT} --disable-shape-cache"
+export RUBY_SHAPE_CACHE_DISABLE=1
+
 # If running the rails server then create or migrate existing database
 # Only if SECRET_KEY_BASE is set (required for production)
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then

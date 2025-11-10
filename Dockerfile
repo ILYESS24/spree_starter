@@ -5,8 +5,7 @@
 # docker run -d -p 80:80 -p 443:443 --name my-app -e SECRET_KEY_BASE=<value> my-app
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-# Using Ruby 3.2.6 which is stable and works on Koyeb
-ARG RUBY_VERSION=3.2.6
+ARG RUBY_VERSION=3.3.0
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
@@ -19,7 +18,9 @@ RUN apt-get update -qq && \
 
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle"
+    BUNDLE_PATH="/usr/local/bundle" \
+    RUBYOPT="--disable-shape-cache" \
+    RUBY_SHAPE_CACHE_DISABLE="1"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
