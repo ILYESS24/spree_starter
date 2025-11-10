@@ -18,9 +18,7 @@ RUN apt-get update -qq && \
 
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
-    BUNDLE_PATH="/usr/local/bundle" \
-    RUBYOPT="--disable-shape-cache" \
-    RUBY_SHAPE_CACHE_DISABLE="1"
+    BUNDLE_PATH="/usr/local/bundle"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -62,4 +60,5 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+# Utiliser ruby directement avec -W0 pour éviter le segfault du shape cache
+CMD ["/usr/local/bin/ruby", "-W0", "./bin/rails", "server", "-b", "0.0.0.0"]

@@ -1,11 +1,8 @@
 #!/bin/bash
 # Wrapper pour Rails qui évite le segfault de Ruby 3.3.0 sur Koyeb
-# en désactivant les shapes de Ruby via variable d'environnement
+# Solution: utiliser ruby directement avec un chargement minimal
 
-# Désactiver les shapes de Ruby pour éviter le segfault
-export RUBY_SHAPE_CACHE_DISABLE=1
-export RUBYOPT="${RUBYOPT} --disable-shape-cache"
-
-# Exécuter Rails normalement
-exec /usr/local/bin/ruby "$@"
+# Exécuter ruby avec un chargement minimal pour éviter le segfault
+# Le problème vient du shape cache dans rubygems.rb
+exec /usr/local/bin/ruby -W0 "$@"
 
