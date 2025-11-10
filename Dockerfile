@@ -5,18 +5,9 @@
 # docker run -d -p 80:80 -p 443:443 --name my-app -e SECRET_KEY_BASE=<value> my-app
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-# Using Alpine image which may have better compatibility on Koyeb
-ARG RUBY_VERSION=3.3.0
-FROM docker.io/library/ruby:$RUBY_VERSION-alpine AS base
-
-# Install required packages for Alpine
-RUN apk add --no-cache \
-    postgresql-client \
-    postgresql-dev \
-    libvips \
-    redis \
-    curl \
-    bash
+# Using Ruby 3.2.6 which is stable and works on Koyeb
+ARG RUBY_VERSION=3.2.6
+FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
 WORKDIR /rails
