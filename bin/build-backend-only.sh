@@ -3,16 +3,16 @@
 # exit on error
 set -o errexit
 
-echo "🔧 Building backend only (no assets compilation)..."
+echo "🔧 Building backend API only (no assets compilation)..."
 
-# Installer uniquement les dépendances nécessaires
-bundle install --deployment --without development test
+# Installer uniquement les dépendances nécessaires (sans assets)
+bundle install --deployment --without development test assets
 
 # Ne PAS compiler les assets (économise beaucoup d'espace)
-echo "✅ Backend build complete - assets skipped to save space"
+echo "✅ Backend API build complete - assets skipped to save space"
 
-# Nettoyer les caches
-rm -rf tmp/cache/* log/*.log 2>/dev/null || true
+# Nettoyer les caches et fichiers inutiles
+rm -rf tmp/cache/* log/*.log public/assets 2>/dev/null || true
 
-echo "✅ Build finished - ready to deploy!"
+echo "✅ Backend build finished - ready to deploy API!"
 
