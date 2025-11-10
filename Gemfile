@@ -1,9 +1,9 @@
 source "https://rubygems.org"
 
-ruby '3.2.6'
+ruby '3.3.0'
 
-# Using Rails 7.1 for better compatibility with Ruby 3.2.6
-gem 'rails', '~> 7.1.0'
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem 'rails', '~> 8.0.0'
 
 # Use pg as the database for Active Record
 gem "pg", "~> 1.6"
