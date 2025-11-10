@@ -5,8 +5,8 @@
 # docker run -d -p 80:80 -p 443:443 --name my-app -e SECRET_KEY_BASE=<value> my-app
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-# Using Ruby 3.2.6 instead of 3.3.0 to avoid segfault issues on Koyeb
-ARG RUBY_VERSION=3.2.6
+# Using Ruby 3.3.1 (or latest 3.3.x) to fix segfault issues while keeping Rails 8.0 compatibility
+ARG RUBY_VERSION=3.3.1
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
