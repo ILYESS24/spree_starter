@@ -1,0 +1,81 @@
+envVarGroups:
+  - name: spree-envs
+    envVars:
+      - key: DB_POOL
+        value: 10
+
+# NOTE: Pour le plan gratuit, vous devez utiliser une base de données existante
+# ou créer une nouvelle base de données via le dashboard Render
+# Une seule base de données PostgreSQL gratuite est autorisée par compte
+
+databases:
+  - name: spree-db
+    databaseName: spree
+    user: spree
+    plan: free  # Plan gratuit (limite: 1 par compte)
+    diskSizeGB: 1
+
+services:
+  - type: web
+    name: spree-web
+    runtime: ruby
+    plan: free  # Plan gratuit
+    buildCommand: bin/render-build.sh
+    preDeployCommand: bin/rails db:migrate && bin/rails db:seed
+    startCommand: "bundle exec puma -C config/puma.rb"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spree-db
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        sync: false  # Généré automatiquement par Render
+      - key: WEB_CONCURRENCY
+        value: 1  # Réduit pour le plan gratuit
+      - key: RAILS_ENV
+        value: production
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      - key: REDIS_CACHE_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      # Utilise la même instance Redis pour cache et Sidekiq (plan gratuit)
+  - type: worker
+    name: spree-worker
+    runtime: ruby
+    plan: free  # Plan gratuit
+    buildCommand: bin/render-build.sh
+    startCommand: bundle exec sidekiq
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spree-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      - key: REDIS_CACHE_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        sync: false
+      - key: RAILS_ENV
+        value: production
+      - fromGroup: spree-envs
+  
+  - type: keyvalue
+    name: keyvalue
+    ipAllowList: []
+    plan: free  # Plan gratuit (limite: 1 par compte)
+    maxmemoryPolicy: noeviction
+    # Utilisé à la fois pour Sidekiq et le cache
+

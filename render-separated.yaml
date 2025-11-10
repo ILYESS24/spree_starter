@@ -1,0 +1,100 @@
+envVarGroups:
+  - name: spree-backend-envs
+    envVars:
+      - key: DB_POOL
+        value: 10
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_SERVE_STATIC_FILES
+        value: "false"  # Backend ne sert pas les assets
+
+databases:
+  - name: spree-db
+    databaseName: spree
+    user: spree
+    plan: free  # Ou basic-1gb pour production
+    diskSizeGB: 1
+
+services:
+  # BACKEND - API Rails uniquement (sans assets frontend)
+  - type: web
+    name: spree-backend
+    runtime: ruby
+    plan: free  # Ou starter pour production
+    buildCommand: |
+      bundle install --deployment --without development test &&
+      # Ne PAS compiler les assets (économise l'espace)
+      echo "Backend build - assets skipped"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spree-db
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        sync: false
+      - key: WEB_CONCURRENCY
+        value: 1
+      - key: PORT
+        value: 3000
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      - key: REDIS_CACHE_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      - fromGroup: spree-backend-envs
+    healthCheckPath: /up
+
+  # FRONTEND - Service statique pour les assets
+  - type: web
+    name: spree-frontend
+    runtime: static
+    buildCommand: |
+      # Compiler uniquement les assets frontend
+      bundle install --deployment --without development test &&
+      RAILS_ENV=production SECRET_KEY_BASE=dummy bin/rails assets:precompile &&
+      bin/rails assets:clean &&
+      # Copier les assets dans le répertoire public
+      mkdir -p public &&
+      cp -r public/assets public/ || true
+    staticPublishPath: public
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  # WORKER - Background jobs
+  - type: worker
+    name: spree-worker
+    runtime: ruby
+    plan: free
+    buildCommand: bundle install --deployment --without development test
+    startCommand: bundle exec sidekiq
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: spree-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: keyvalue
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        sync: false
+      - key: RAILS_ENV
+        value: production
+      - fromGroup: spree-backend-envs
+  
+  # REDIS pour Sidekiq et cache
+  - type: keyvalue
+    name: keyvalue
+    ipAllowList: []
+    plan: free
+    maxmemoryPolicy: noeviction
+

@@ -37,7 +37,9 @@ RUN bundle install && \
 COPY . .
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 RAILS_ENV=production ./bin/rails assets:precompile && \
+    ./bin/rails assets:clean && \
+    rm -rf tmp/cache/* log/*.log
 
 
 # Final stage for app image
