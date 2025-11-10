@@ -11,8 +11,8 @@ bundle install --deployment --without development test
 # Compiler uniquement les assets
 RAILS_ENV=production SECRET_KEY_BASE=dummy bin/rails assets:precompile
 
-# Nettoyer après compilation
-bin/rails assets:clean
+# Nettoyer après compilation (nécessite aussi SECRET_KEY_BASE)
+RAILS_ENV=production SECRET_KEY_BASE=dummy bin/rails assets:clean
 
 # Nettoyer les caches
 rm -rf tmp/cache/* log/*.log 2>/dev/null || true
