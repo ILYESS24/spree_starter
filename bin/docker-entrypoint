@@ -1,8 +1,13 @@
 #!/bin/bash -e
 
 # If running the rails server then create or migrate existing database
+# Only if SECRET_KEY_BASE is set (required for production)
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  AUTO_ACCEPT=1 ./bin/rails db:prepare
+  if [ -n "${SECRET_KEY_BASE}" ]; then
+    AUTO_ACCEPT=1 ./bin/rails db:prepare
+  else
+    echo "Warning: SECRET_KEY_BASE not set, skipping db:prepare"
+  fi
 fi
 
 exec "${@}"
