@@ -21,7 +21,10 @@ RUN apk add --no-cache \
 # Rails app lives here
 WORKDIR /rails
 
-# Alpine uses apk, packages already installed in base image
+# Install base packages
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 postgresql-client libpq-dev libvips redis-tools && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
@@ -31,10 +34,9 @@ ENV RAILS_ENV="production" \
 FROM base AS build
 
 # Install packages needed to build gems
-RUN apk add --no-cache \
-    build-base \
-    git \
-    pkgconfig
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential git pkg-config && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
